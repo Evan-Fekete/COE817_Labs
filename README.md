@@ -4,7 +4,7 @@ Repo for COE817 labs
 
 ### Before Starting Work
 
-When you start working on repoository enter this command into git to update the repoository to the main branch.
+When you start working on a repository, enter this command into Git to update the repository to the main branch.
 
 ```
 git pull origin main
