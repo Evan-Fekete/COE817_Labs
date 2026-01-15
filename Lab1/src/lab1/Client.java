@@ -32,7 +32,7 @@ public class Client {
                     new InputStreamReader(cliSocket.getInputStream()));
         ) {
             // TODO add logic for sending and receiving from Server
-            
+            // Evan added this comment on github
         } catch (IOException e) {
             System.err.println("IO Connection not found for " + hostName);
             System.exit(1);
@@ -40,3 +40,4 @@ public class Client {
     }
     
 }
+
