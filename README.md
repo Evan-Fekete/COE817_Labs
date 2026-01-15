@@ -1,6 +1,6 @@
 # COE817 Labs
 
-Repo for COE817 labs
+Repository for sharing COE817 lab materials with my partner for COE817.
 
 ### Before Starting Work
 
