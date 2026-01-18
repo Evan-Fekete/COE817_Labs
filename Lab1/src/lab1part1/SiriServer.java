@@ -35,9 +35,10 @@ public class SiriServer {
                         String plainA;
                         
                         plainA = switch (plainQ.toLowerCase()) {
-                            case "who created you" -> "I was created by Apple, in California";
-                            case "victory and beautiful" -> "what does siri mean";
-                            case "are you a robot" -> "are you a robot";
+                            case "who created you?" -> "I was created by Apple";
+                            case "what does siri mean?" -> "victory and beautiful";
+                            case "are you a robot?" -> "I am a virtual assistant";
+                            case "what is love?" -> "baby don't hurt me";
                             default -> "Sorry, I don't understand the question";
                         };
                         
