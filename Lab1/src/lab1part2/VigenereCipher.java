@@ -2,17 +2,17 @@ package lab1part2;
 
 public final class VigenereCipher {
 
-    // private VigenereCipher() { }
-
     /** Helper function used to encode each character for the encrypt function
      * 
      * args:
-     * c : character being decoded
-     * keyword : key for Vignere Cipher
-     * keyPostion : current position, which determines how the char is encoded
+     *  c : character being decoded
+     *  keyword : key for Vignere Cipher
+     *  keyPostion : current position, which determines how the char is encoded
      * 
      * returns:
-     * dec : decoded char
+     *  dec : decoded char
+     * 
+     * 
     */
     public static char encode(char c, String keyword, int keyPosition) {
         // System.out.println(c +" " + keyword.charAt(keyPosition % keyword.length()) + " " + keyword.length());
@@ -33,12 +33,12 @@ public final class VigenereCipher {
     /** Helper function used to decode each character for the decrypt function
      * 
      * args:
-     * c : character being decoded
-     * keyword : key for Vignere Cipher
-     * keyPostion : current position, which determines how the char is encoded
+     *  c : character being decoded
+     *  keyword : key for Vignere Cipher
+     *  keyPostion : current position, which determines how the char is encoded
      * 
      * returns:
-     * dec : decoded char
+     *  dec : decoded char
     */
     public static char decode(char c, String keyword, int keyPosition) {
         if (Character.isUpperCase(c)) {

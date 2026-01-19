@@ -5,7 +5,7 @@ import java.net.*;
 import java.net.Socket;
 
 class ClientHandler extends Thread {
-    private Socket clientSocket;
+    private final Socket clientSocket;
     
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
@@ -17,7 +17,6 @@ class ClientHandler extends Thread {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
             ) {
-            
             while (true) {
                 String key = "TMU";
                 String cipherQ;
@@ -44,7 +43,7 @@ class ClientHandler extends Thread {
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Server error: " + e.getMessage());
         }
     }
 }
