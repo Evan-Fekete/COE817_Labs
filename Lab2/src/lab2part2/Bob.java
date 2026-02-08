@@ -94,7 +94,7 @@ public class Bob {
                 
                 // Exchange completes wait for Alice to send first message Id||Na
                 aliceInput = in.readLine();
-                System.out.println("Alice sent: " + aliceInput);
+                System.out.println("RECEIVED MESSAGE 1 => Alice sent: " + aliceInput);
 
                 // Split Alice's message at || to seperate variables
                 firstAliceArr = aliceInput.split(",");
@@ -111,9 +111,12 @@ public class Bob {
                 
                 // Wait for Alice's next message E(PUb,E(PRa,Nb))
                 aliceInput = in.readLine();
+                System.out.println("RECEIVED MESSAGE 3 => Alice sent: " + aliceInput);
                 
                 byte[] aliceInputBytes = Base64.getDecoder().decode(aliceInput);
                 String decryptedString = decrypt(aliceInputBytes, privateKey);
+                
+                System.out.println("DECRYPTED MESSAGE 3 => Decoded message: " + decryptedString);
                 
                 // Check if Nb received from Bob is correct
                 if (decryptedString.equals(String.valueOf(nonceB))) {

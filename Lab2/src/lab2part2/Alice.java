@@ -106,7 +106,7 @@ public class Alice {
             // Wait for Bob's response
             bobInput = in.readLine();
             
-            System.out.println("Bob sent: " + bobInput);
+            System.out.println("RECEIVED MESSAGE 2 => Bob sent: " + bobInput);
             
             // Split Alice's message at ||
             bobArr = bobInput.split(",");
@@ -114,7 +114,7 @@ public class Alice {
             byte[] bobArrBytes = Base64.getDecoder().decode(bobArr[0]);
             String decryptedString = decrypt(bobArrBytes, privateKey);
             
-            // System.out.println(decryptedString);
+            System.out.println("DECRYPTED MESSAGE 2 => Decoded message: " + decryptedString);
             
             // Check if Na received from Bob is correct
             if (decryptedString.equals(String.valueOf(nonceA))) {

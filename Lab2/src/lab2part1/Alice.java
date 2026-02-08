@@ -38,12 +38,12 @@ public class Alice {
             message = id + "," + nonce;
             
             // Send first message (IDa || Na)
-            System.out.println("Sending: " + message);
+            // System.out.println("Sending: " + message);
             out.println(message);
             
             // Wait for Bob to send response (Nb||E(KAB,[IDb||NA]))
             bobInput = in.readLine();
-            System.out.println("Received: " + bobInput);
+            System.out.println("RECEIVED MESSAGE 2=> Received from Bob: " + bobInput);
             
             // Split Bob's response at commas
             // First half of response is Nb
@@ -64,7 +64,7 @@ public class Alice {
             // Decrypt the ciphertext
             byte[] decodedData = cipher.doFinal(Base64.getDecoder().decode(firstBobArr[1]));
             String decodedDataString = new String(decodedData);
-            System.out.println("The decoded data is: " + decodedDataString);
+            System.out.println("DECRYPTED MESSAGE 2=> The decoded data is: " + decodedDataString);
             
             // Split Bob's encrypted message at commas
             // First half of response is IDb
@@ -73,24 +73,22 @@ public class Alice {
             
             // Check if Nb received from Bob is correct
             if (secondBobArr[1].equals(String.valueOf(nonce))) {
-                System.out.println("Nonce has been verified. ");
+                System.out.println("___Nonce has been verified. ");
             }
             else {
-                System.out.println("Mismatched Nonce Exiting...");
+                System.out.println("___Mismatched Nonce Exiting...");
                 System.exit(0);
             }
             
-            //
+            // Prepare final message for encryption 
             message = id + "," + firstBobArr[0];
-            
-            // Initialize cipher for encryption
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
                     
             // Encrypt plaintext
             byte[] cipherTextArray = cipher.doFinal(message.getBytes());
             String cipherTextString = Base64.getEncoder().encodeToString(cipherTextArray);
             
-            System.out.println("Sending: " + message);
+            //System.out.println("Sending: " + message);
             
             // Send final message to Bob (E(Kab,[IDa|Nb]))
             out.print(cipherTextString);

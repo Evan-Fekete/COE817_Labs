@@ -43,7 +43,7 @@ public class Bob {
 
                 // Once connection is established wait for Alice to send first message
                 aliceInput = in.readLine();
-                System.out.println("Alice sent: " + aliceInput);
+                System.out.println("RECEIVED MESSAGE 1=> Alice sent: " + aliceInput);
 
                 //  Split Alice's message at commas to seperate variables
                 firstAliceArr = aliceInput.split(",");
@@ -53,7 +53,7 @@ public class Bob {
                 int nonce = r.nextInt(1000);
                 message = id + "," + firstAliceArr[1];
 
-                System.out.println("Encrypting: " + message);
+                // System.out.println("Encrypting: " + message);
 
                 // Generate a DES Key
                 DESKeySpec desKeySpec = new DESKeySpec(secretKey.getBytes());
@@ -71,27 +71,31 @@ public class Bob {
 
                 // Encode encrypted bits to properly display encrypted plaintext
                 String cipherTextString = Base64.getEncoder().encodeToString(cipherTextArray);
-                System.out.println("Cipher text of Bob Message is " + cipherTextString);
+                // System.out.println("Encrypted text of Bob Message is " + cipherTextString);
 
                 // Send message with Nonce to Alice (Nb||E(KAB,[IDb||NA]))
                 message = nonce + "," + cipherTextString;
                 out.println(message);
+                
+                // Wait for next Alice message E(Kab,[IDa||Na])
                 aliceInput = in.readLine();
 
+                System.out.println("RECEIVED MESSAGE 3=>Receved from Alice: "+aliceInput);
+                
                 // Initialize the cipher for decryption
                 cipher.init(Cipher.DECRYPT_MODE, secretKey1);
                 byte[] decodedData = cipher.doFinal(Base64.getDecoder().decode(aliceInput));
                 String decodedDataString = new String(decodedData);
 
                 // Decrypt the ciphertext
-                System.out.println("The decoded data is: " + decodedDataString);
+                System.out.println("DECRYPTED MESSAGE 3=>The decoded data is: " + decodedDataString);
                 secondAliceArr = decodedDataString.split(",");
 
                 if (secondAliceArr[1].trim().equals(String.valueOf(nonce))) {
-                    System.out.println("Nonce has been verified. ");
+                    System.out.println("___Nonce has been verified. ");
                 }
                 else {
-                    System.out.println("Mismatched Nonce Exiting...");
+                    System.out.println("___Mismatched Nonce Exiting...");
                     System.exit(0);
                 }
 
