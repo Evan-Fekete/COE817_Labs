@@ -20,16 +20,19 @@ import java.util.Base64;
 public class Bob {
     public static void main(String[] args) throws Exception {
         
-        if (args.length != 1) {
-            System.err.println("Error: one argument needed, port number");
-            System.exit(1);
+        int portNumber;
+        
+        if (args.length == 0) {
+            portNumber = 4444;
+        }
+        else {
+            portNumber = Integer.parseInt(args[0]);
         }
         
         // Key name must have at least 8 characters or 64 bits
         String secretKey = "GreatKeyName", message, id;
         String[] firstAliceArr, secondAliceArr;
         Random r = new Random();
-        int portNumber = Integer.parseInt(args[0]);
         
         System.out.println("Bob listening on port number " + portNumber);
         try (ServerSocket bobSock = new ServerSocket(portNumber)) {
@@ -39,11 +42,11 @@ public class Bob {
                     BufferedReader in = new BufferedReader(new InputStreamReader(aliceSock.getInputStream()));
                     PrintWriter out = new PrintWriter(aliceSock.getOutputStream(), true)) {
 
-                System.out.println("Alice connected: " + aliceSock.getRemoteSocketAddress());
+                System.out.println("Alice connected: " + aliceSock.getRemoteSocketAddress() + "\n");
 
                 // Once connection is established wait for Alice to send first message
                 aliceInput = in.readLine();
-                System.out.println("RECEIVED MESSAGE 1=> Alice sent: " + aliceInput);
+                System.out.println("RECEIVED MESSAGE 1=> Alice sent: " + aliceInput + "\n");
 
                 //  Split Alice's message at commas to seperate variables
                 firstAliceArr = aliceInput.split(",");
@@ -63,18 +66,16 @@ public class Bob {
                 // Create a cipher instance to be used for encryption and decryption
                 Cipher cipher = Cipher.getInstance("DES");
 
-                // Initialize cipher for encryption
+                // Encrypt message
                 cipher.init(Cipher.ENCRYPT_MODE, secretKey1);
-
-                // Encrypt plaintext
-                byte[] cipherTextArray = cipher.doFinal(message.getBytes());
-
-                // Encode encrypted bits to properly display encrypted plaintext
-                String cipherTextString = Base64.getEncoder().encodeToString(cipherTextArray);
+                byte[] encryptedMessageBytes = cipher.doFinal(message.getBytes());
+                String encryptedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
                 // System.out.println("Encrypted text of Bob Message is " + cipherTextString);
 
                 // Send message with Nonce to Alice (Nb||E(KAB,[IDb||NA]))
-                message = nonce + "," + cipherTextString;
+                message = nonce + "," + encryptedMessage;
+                
+                System.out.println("Sending: " + message + "\n");
                 out.println(message);
                 
                 // Wait for next Alice message E(Kab,[IDa||Na])
@@ -88,18 +89,18 @@ public class Bob {
                 String decodedDataString = new String(decodedData);
 
                 // Decrypt the ciphertext
-                System.out.println("DECRYPTED MESSAGE 3=>The decoded data is: " + decodedDataString);
+                System.out.println("DECRYPTED MESSAGE 3=>The decoded data is: " + decodedDataString + "\n");
                 secondAliceArr = decodedDataString.split(",");
 
                 if (secondAliceArr[1].trim().equals(String.valueOf(nonce))) {
-                    System.out.println("___Nonce has been verified. ");
+                    System.out.println("Nonce has been verified. " + "\n");
                 }
                 else {
-                    System.out.println("___Mismatched Nonce Exiting...");
+                    System.out.println("Mismatched Nonce Exiting..." + "\n");
                     System.exit(0);
                 }
 
-                System.out.println("Bob disconnected.");
+                System.out.println("Bob is finished...");
             } catch (IOException e) {
                 System.err.println("Handler error: " + e.getMessage());
             }

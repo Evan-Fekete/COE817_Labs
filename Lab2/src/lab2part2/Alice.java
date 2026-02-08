@@ -1,29 +1,11 @@
 package lab2part2;
 
 import java.io.*;
+import javax.crypto.*;
+import java.security.*;
 import java.net.Socket;
 import java.util.Base64;
 import java.util.Random;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESKeySpec;
-
-import java.io.*;
-import java.net.Socket;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.util.Base64;
-import java.util.Random;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESKeySpec;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PublicKey;
-import java.security.PrivateKey;
 import java.security.spec.X509EncodedKeySpec;
 
 /**
@@ -37,39 +19,51 @@ public class Alice {
         return keyPairGenerator.generateKeyPair();
     }
     
-    public static byte[] encrypt(String message, PublicKey publicKey) throws Exception {
+    public static String encrypt(String message, PublicKey publicKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return cipher.doFinal(message.getBytes());
+        byte[] encryptedMessageBytes = cipher.doFinal(message.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedMessageBytes);
     }
     
-    public static String decrypt(byte[] cipherText, PrivateKey privateKey) throws Exception {
+    public static String decrypt(String encryptedMessage, PrivateKey privateKey) throws Exception {
+        byte[] encryptedMessageBytes = Base64.getDecoder().decode(encryptedMessage);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] decryptedOriginalArray =  cipher.doFinal(cipherText);
+        byte[] decryptedOriginalArray =  cipher.doFinal(encryptedMessageBytes);
         return new String(decryptedOriginalArray);
     }
     
     public static void main(String[] args) throws Exception {
         
-        if (args.length != 2) {
-            System.err.println("Error: two arguments needed, host and port number");
-            System.exit(1);
+        int portNumber;
+        String hostName;
+        
+        if (args.length == 0) {
+            portNumber = 4444;
+            hostName = "localhost";
         }
-
+        else {
+            portNumber = Integer.parseInt(args[1]);
+            hostName = args[0];
+        }
+        
         Random r = new Random();
-        String hostName = args[0], id, message, bobPublicKeyString, bobInput;
-        byte[] bobPublicKeyBytes, encryptedMessage;
+        String id, message, bobPublicKeyString, bobInput, encryptedMessage;
+        byte[] bobPublicKeyBytes;
         String[] bobArr;
-        int portNumber = Integer.parseInt(args[1]);
         
         try (Socket aliceSock = new Socket(hostName, portNumber);
                 BufferedReader in = new BufferedReader(new InputStreamReader(aliceSock.getInputStream()));
                 PrintWriter out = new PrintWriter(aliceSock.getOutputStream(), true)) {    
             
-            // Concatenate nonce to id
+            System.out.println("Connected to Bob: " + aliceSock.getRemoteSocketAddress() + "\n");
+
+            // Define ID and generate nonce (0-999)
             id = "Alice";
             int nonceA = r.nextInt(1000);
+            
+            // Concatenate nonce to id
             message = id + "," + nonceA;
             
             // Generate RSA key pair
@@ -99,37 +93,33 @@ public class Alice {
             // NONCE VERIFICATION SECTION
             //**************************************************************
                 
-            
             // Send first message to Bob (Id||Na)
+            System.out.println("Sending: " + message + "\n");
             out.println(message);
             
-            // Wait for Bob's response
+            // Get Bob's response
             bobInput = in.readLine();
-            
             System.out.println("RECEIVED MESSAGE 2 => Bob sent: " + bobInput);
-            
-            // Split Alice's message at ||
             bobArr = bobInput.split(",");
             
-            byte[] bobArrBytes = Base64.getDecoder().decode(bobArr[0]);
-            String decryptedString = decrypt(bobArrBytes, privateKey);
+            String decryptedString = decrypt(bobArr[0], privateKey);
             
-            System.out.println("DECRYPTED MESSAGE 2 => Decoded message: " + decryptedString);
+            System.out.println("DECRYPTED MESSAGE 2 => Decoded message: " + decryptedString + "\n");
             
             // Check if Na received from Bob is correct
             if (decryptedString.equals(String.valueOf(nonceA))) {
-                System.out.println("___Nonce has been verified. " + decryptedString + " = " + nonceA);
+                System.out.println("Nonce has been verified. " + decryptedString + " = " + nonceA + "\n");
             }
             else {
-                System.out.println("___Mismatched Nonce Exiting..." + decryptedString + " =/= " + nonceA);
+                System.out.println("Mismatched Nonce Exiting..." + decryptedString + " =/= " + nonceA + "\n");
                 System.exit(0);
             }
             
-            // Encrypt the third message E(PUb,E(PRa,Nb))
+            // Encrypt and send the third message E(PUb,E(PRa,Nb))
             encryptedMessage = encrypt(bobArr[1], bobPublicKey);
-            String encryptedMessageBase64 = Base64.getEncoder().encodeToString(encryptedMessage);
             
-            out.println(encryptedMessageBase64);
+            System.out.println("Sending: " + encryptedMessage + "\n");
+            out.println(encryptedMessage);
             
             System.out.println("Alice is finished...");
         }   

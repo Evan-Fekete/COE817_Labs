@@ -16,29 +16,38 @@ import javax.crypto.spec.DESKeySpec;
 public class Alice {
     public static void main(String[] args) throws Exception {
         
-        if (args.length != 2) {
-            System.err.println("Error: two arguments needed, host and port number");
-            System.exit(1);
+        int portNumber;
+        String hostName;
+        
+        if (args.length == 0) {
+            portNumber = 4444;
+            hostName = "localhost";
+        }
+        else {
+            portNumber = Integer.parseInt(args[1]);
+            hostName = args[0];
         }
         
         // Key name must have at least 8 characters or 64 bits
         String key = "GreatKeyName", id, bobInput, message;
         String[] firstBobArr, secondBobArr;
         Random r = new Random();
-        String hostName = args[0];
-        int portNumber = Integer.parseInt(args[1]);
         
         try (Socket aliceSock = new Socket(hostName, portNumber);
                 BufferedReader in = new BufferedReader(new InputStreamReader(aliceSock.getInputStream()));
                 PrintWriter out = new PrintWriter(aliceSock.getOutputStream(), true)) {    
             
-            // Concatenate nonce to id
+            System.out.println("Connected to Bob: " + aliceSock.getRemoteSocketAddress() + "\n");
+            
+            // Define ID and generate nonce (0-999)
             id = "Alice";
             int nonce = r.nextInt(1000);
+            
+            // Concatenate nonce to id
             message = id + "," + nonce;
             
             // Send first message (IDa || Na)
-            // System.out.println("Sending: " + message);
+            System.out.println("Sending: " + message);
             out.println(message);
             
             // Wait for Bob to send response (Nb||E(KAB,[IDb||NA]))
@@ -46,8 +55,6 @@ public class Alice {
             System.out.println("RECEIVED MESSAGE 2=> Received from Bob: " + bobInput);
             
             // Split Bob's response at commas
-            // First half of response is Nb
-            // Second half of response is E(Kab, [IDb || Na])
             firstBobArr = bobInput.split(",");
             
             // Generate a DES Key
@@ -64,19 +71,17 @@ public class Alice {
             // Decrypt the ciphertext
             byte[] decodedData = cipher.doFinal(Base64.getDecoder().decode(firstBobArr[1]));
             String decodedDataString = new String(decodedData);
-            System.out.println("DECRYPTED MESSAGE 2=> The decoded data is: " + decodedDataString);
+            System.out.println("DECRYPTED MESSAGE 2=> The decoded data is: " + decodedDataString + "\n");
             
             // Split Bob's encrypted message at commas
-            // First half of response is IDb
-            // Second half of response is Na
             secondBobArr = decodedDataString.split(",");
             
             // Check if Nb received from Bob is correct
             if (secondBobArr[1].equals(String.valueOf(nonce))) {
-                System.out.println("___Nonce has been verified. ");
+                System.out.println("Nonce has been verified." + "\n");
             }
             else {
-                System.out.println("___Mismatched Nonce Exiting...");
+                System.out.println("Mismatched Nonce Exiting..." + "\n");
                 System.exit(0);
             }
             
@@ -85,15 +90,15 @@ public class Alice {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
                     
             // Encrypt plaintext
-            byte[] cipherTextArray = cipher.doFinal(message.getBytes());
-            String cipherTextString = Base64.getEncoder().encodeToString(cipherTextArray);
+            byte[] encryptedMessageBytes = cipher.doFinal(message.getBytes());
+            String encryptedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
             
-            //System.out.println("Sending: " + message);
+            System.out.println("Sending: " + message + "\n");
             
             // Send final message to Bob (E(Kab,[IDa|Nb]))
-            out.print(cipherTextString);
+            out.print(encryptedMessage);
             
-            System.out.println("Alice disconnected.");
+            System.out.println("Alice is finished...");
         } catch(IOException e) {
             System.err.println("Client error: " + e.getMessage());
         }
